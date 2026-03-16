@@ -1,14 +1,26 @@
 package com.anime3rb
 
-import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.HomePageResponse
+import com.lagradost.cloudstream3.LoadResponse
+import com.lagradost.cloudstream3.MainAPI
+import com.lagradost.cloudstream3.MainPageRequest
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.TvType
+import com.lagradost.cloudstream3.newEpisode
+import com.lagradost.cloudstream3.newHomePageResponse
+import com.lagradost.cloudstream3.newMovieLoadResponse
+import com.lagradost.cloudstream3.newTvSeriesLoadResponse
+import com.lagradost.cloudstream3.newTvSeriesSearchResponse
+import com.lagradost.cloudstream3.utils.ExtractorLink
 import org.jsoup.nodes.Element
 
 class Anime3rb : MainAPI() {
     override var mainUrl = "https://anime3rb.com"
     override var name = "Anime3rb Josef"
-    override val hasMainPage = true
     override var lang = "ar"
-    override val supportedTypes = setOf(TvType.Anime, TvType.AnimeMovie)
+    override val hasMainPage = true
+    override val supportedTypes = setOf(TvType.Anime)
 
     private fun String.toAbs(): String {
         return when {
@@ -19,117 +31,86 @@ class Anime3rb : MainAPI() {
         }
     }
 
-    private fun Element.getPoster(): String? {
-        val img = selectFirst("img") ?: return null
-        val src = listOf(
-            img.attr("data-src"),
-            img.attr("data-lazy-src"),
-            img.attr("src")
-        ).firstOrNull { it.isNotBlank() } ?: return null
-        return src.toAbs()
-    }
-
-    private fun Element.toSearchResult(): SearchResponse? {
-        val href = absUrl("href").ifBlank { attr("href").toAbs() }.ifBlank { return null }
+    private fun Element.toCard(): SearchResponse? {
+        val href = absUrl("href").ifBlank { attr("href").toAbs() }
+        if (href.isBlank()) return null
 
         val title = attr("title").trim()
-            .ifBlank { selectFirst("h2, h3, .title")?.text()?.trim().orEmpty() }
             .ifBlank { selectFirst("img")?.attr("alt")?.trim().orEmpty() }
             .ifBlank { text().trim() }
-            .ifBlank { return null }
 
-        val poster = getPoster()
+        if (title.isBlank()) return null
 
-        return newAnimeSearchResponse(title, href, TvType.Anime) {
+        val poster = selectFirst("img")
+            ?.attr("src")
+            ?.takeIf { it.isNotBlank() }
+            ?.toAbs()
+
+        return newTvSeriesSearchResponse(title, href, TvType.Anime) {
             posterUrl = poster
         }
     }
 
     override val mainPage = mainPageOf(
-        "$mainUrl/titles/list?page=" to "قائمة الأنمي",
-        "$mainUrl/titles/list/tv?page=" to "مسلسلات الأنمي",
-        "$mainUrl/titles/list/movie?page=" to "أفلام الأنمي"
+        "$mainUrl/titles/list?page=" to "Anime"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val doc = app.get(request.data + page, referer = mainUrl).document
+        val doc = app.get(request.data + page).document
 
         val items = doc.select("a[href*=/titles/]")
-            .mapNotNull { it.toSearchResult() }
+            .mapNotNull { it.toCard() }
             .distinctBy { it.url }
 
         return newHomePageResponse(request.name, items)
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val encoded = java.net.URLEncoder.encode(query, "UTF-8")
-        val urls = listOf(
-            "$mainUrl/titles/list?q=$encoded",
-            "$mainUrl/?s=$encoded"
-        )
+        val doc = app.get("$mainUrl/?s=$query").document
 
-        val results = mutableListOf<SearchResponse>()
-
-        urls.forEach { url ->
-            try {
-                val doc = app.get(url, referer = mainUrl).document
-                results += doc.select("a[href*=/titles/]")
-                    .mapNotNull { it.toSearchResult() }
-            } catch (_: Exception) {
-            }
-        }
-
-        return results.distinctBy { it.url }
+        return doc.select("a[href*=/titles/]")
+            .mapNotNull { it.toCard() }
+            .distinctBy { it.url }
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val doc = app.get(url, referer = mainUrl).document
+        val doc = app.get(url).document
 
-        val title = doc.selectFirst("h1")?.text()?.trim()
-            ?: doc.selectFirst("meta[property=og:title]")?.attr("content")?.trim()
-            ?: return null
+        val title = doc.selectFirst("h1")?.text()?.trim() ?: return null
+        val poster = doc.selectFirst("img")
+            ?.attr("src")
+            ?.takeIf { it.isNotBlank() }
+            ?.toAbs()
 
-        val poster = doc.selectFirst("meta[property=og:image]")?.attr("content")?.ifBlank { null }
-            ?: doc.selectFirst("img")?.let { img ->
-                listOf(
-                    img.attr("data-src"),
-                    img.attr("data-lazy-src"),
-                    img.attr("src")
-                ).firstOrNull { it.isNotBlank() }?.toAbs()
-            }
+        val plot = doc.selectFirst("meta[name=description]")
+            ?.attr("content")
+            ?.trim()
 
-        val plot = doc.selectFirst("meta[name=description]")?.attr("content")?.trim()
-            ?: doc.select("p").firstOrNull { it.text().length > 80 }?.text()?.trim()
-
-        val episodeLinks = doc.select("a[href]")
+        val episodes = doc.select("a[href]")
             .mapNotNull { a ->
                 val href = a.absUrl("href").ifBlank { a.attr("href").toAbs() }
-                if (href.isBlank()) return@mapNotNull null
-                if (!href.contains("/titles/")) return@mapNotNull null
-                if (!a.text().contains("الحلقة") && !a.text().contains("episode", true)) return@mapNotNull null
-                href to a.text().trim()
-            }
-            .distinctBy { it.first }
+                val text = a.text().trim()
 
-        if (episodeLinks.isEmpty()) {
-            return newAnimeLoadResponse(title, url, TvType.AnimeMovie) {
+                if (href.isBlank()) return@mapNotNull null
+                if (!text.contains("الحلقة") && !text.contains("episode", ignoreCase = true)) return@mapNotNull null
+
+                newEpisode(href) {
+                    name = text
+                    episode = Regex("(\\d+)").find(text)?.groupValues?.getOrNull(1)?.toIntOrNull()
+                }
+            }
+            .distinctBy { it.data }
+
+        return if (episodes.isEmpty()) {
+            newMovieLoadResponse(title, url, TvType.AnimeMovie, url) {
                 posterUrl = poster
                 this.plot = plot
             }
-        }
-
-        val episodes = episodeLinks.map { (href, text) ->
-            val epNum = Regex("(\\d+)").find(text)?.groupValues?.getOrNull(1)?.toIntOrNull()
-            newEpisode(href) {
-                name = text.ifBlank { "حلقة" }
-                episode = epNum
+        } else {
+            newTvSeriesLoadResponse(title, url, TvType.Anime, episodes) {
+                posterUrl = poster
+                this.plot = plot
             }
-        }
-
-        return newAnimeLoadResponse(title, url, TvType.Anime) {
-            posterUrl = poster
-            this.plot = plot
-            this.episodes = episodes
         }
     }
 
