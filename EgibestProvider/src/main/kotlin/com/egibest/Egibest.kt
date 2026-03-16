@@ -3,6 +3,7 @@ package com.egibest
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.network.WebViewResolver
+import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.nicehttp.requestCreator
@@ -25,35 +26,49 @@ class Egibest : MainAPI() {
         }
 
     private fun isMovie(href: String, rawTitle: String): Boolean {
-        return rawTitle.contains("فيلم") ||
-            rawTitle.contains("film", ignoreCase = true) ||
-            href.contains("مشاهدة-فيلم") ||
-            href.contains("%d9%81%d9%8a%d9%84%d9%85")
+        val t = rawTitle.lowercase()
+        val h = href.lowercase()
+        return t.contains("فيلم") ||
+            t.contains("film") ||
+            h.contains("مشاهدة-فيلم") ||
+            h.contains("%d9%81%d9%8a%d9%84%d9%85")
     }
 
     private fun cleanTitle(raw: String): String = raw
-        .replace(Regex("^مشاهدة (فيلم|مسلسل|انمي|أنمي|كرتون|برنامج)\\s+"), "")
-        .replace(Regex("\\s+(مترجم|مدبلج|حصرى|حصريا|اون لاين|اونلاين|كامل|على أكثر من سيرفر|كاملة).*$"), "")
+        .replace(Regex("^مشاهدة\\s+(فيلم|مسلسل|انمي|أنمي|كرتون|برنامج)\\s+"), "")
+        .replace(Regex("\\s+(مترجم|مدبلج|حصرى|حصريا|اون لاين|أون لاين|اونلاين|كامل|كاملة|على أكثر من سيرفر).*$"), "")
         .trim()
 
     private fun Element.pickImage(): String? {
         val img = selectFirst("img") ?: return null
-        return listOf(
+        val candidates = listOf(
             img.attr("data-src"),
             img.attr("data-lazy-src"),
             img.attr("data-original"),
+            img.attr("data-image"),
             img.attr("src")
-        ).firstOrNull { it.isNotBlank() }?.toAbs()
+        )
+        return candidates.firstOrNull { it.isNotBlank() }?.toAbs()
+    }
+
+    private fun Element.pickTitle(): String? {
+        val candidates = listOfNotNull(
+            selectFirst("h3.title")?.text(),
+            selectFirst("h3")?.text(),
+            selectFirst("span.title")?.text(),
+            selectFirst(".movieTitle")?.text(),
+            selectFirst(".epTitle")?.text(),
+            selectFirst("img")?.attr("alt"),
+            attr("title"),
+            text()
+        ).map { it.trim() }
+
+        return candidates.firstOrNull { it.isNotBlank() }
     }
 
     private fun Element.toCard(): SearchResponse? {
         val href = absUrl("href").ifBlank { attr("href").toAbs() }.ifBlank { return null }
-        val rawTitle = (
-            selectFirst("h3.title, h3, span.title, .movieTitle, .epTitle")?.text()?.trim()
-                ?: selectFirst("img")?.attr("alt")?.trim()
-                ?: text().trim()
-        ).ifBlank { return null }
-
+        val rawTitle = pickTitle() ?: return null
         val title = cleanTitle(rawTitle).ifBlank { rawTitle }
         val poster = pickImage()
 
@@ -74,24 +89,30 @@ class Egibest : MainAPI() {
         "$mainUrl/movies/?page=" to "أحدث الأفلام",
         "$mainUrl/series/?page=" to "أحدث المسلسلات",
         "$mainUrl/episodes/?page=" to "أحدث الحلقات",
-        "$mainUrl/category/anime/?page=" to "انمي مترجم"
+        "$mainUrl/category/anime/?page=" to "الأنمي"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = request.data + page
         val doc = app.get(url, referer = mainUrl).document
 
-        val items = doc.select("a.postBlockCol, a.postBlock, .postGrid a, .movie a, .block-posts a")
-            .mapNotNull { it.toCard() }
+        val items = doc.select(
+            "a.postBlockCol, a.postBlock, .postGrid a, .movie a, .block-posts a, article a"
+        ).mapNotNull { it.toCard() }
             .distinctBy { it.url }
 
         return newHomePageResponse(request.name, items)
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val doc = app.get("$mainUrl/?s=${query.trim().replace(" ", "+")}", referer = mainUrl).document
-        return doc.select("a.postBlockCol, a.postBlock, .postGrid a, .movie a, .block-posts a")
-            .mapNotNull { it.toCard() }
+        val doc = app.get(
+            "$mainUrl/?s=${query.trim().replace(" ", "+")}",
+            referer = mainUrl
+        ).document
+
+        return doc.select(
+            "a.postBlockCol, a.postBlock, .postGrid a, .movie a, .block-posts a, article a"
+        ).mapNotNull { it.toCard() }
             .distinctBy { it.url }
     }
 
@@ -105,14 +126,14 @@ class Egibest : MainAPI() {
         val title = cleanTitle(rawTitle).ifBlank { rawTitle }
 
         val poster = doc.selectFirst("meta[property=og:image]")?.attr("content")?.ifBlank { null }
-            ?: doc.selectFirst("img.postCoverImg, .postCover img, article img, .poster img")
-                ?.let {
-                    listOf(
-                        it.attr("data-src"),
-                        it.attr("data-lazy-src"),
-                        it.attr("src")
-                    ).firstOrNull { s -> s.isNotBlank() }?.toAbs()
-                }
+            ?: doc.selectFirst("img.postCoverImg, .postCover img, article img, .poster img")?.let { img ->
+                listOf(
+                    img.attr("data-src"),
+                    img.attr("data-lazy-src"),
+                    img.attr("data-original"),
+                    img.attr("src")
+                ).firstOrNull { it.isNotBlank() }?.toAbs()
+            }
 
         val plot = doc.selectFirst(".postDesc, .entry-content p, .storyLine, .summary")?.text()?.trim()
         val year = Regex("(19|20)\\d{2}").find(rawTitle)?.value?.toIntOrNull()
@@ -133,29 +154,37 @@ class Egibest : MainAPI() {
 
         val episodes = mutableListOf<Episode>()
 
-        doc.select("a.postBlock, div.postBlock a, .episodes a, .epAll a, a[href*='الحلقه'], a[href*='episode']")
-            .forEach { ep ->
-                val epHref = ep.absUrl("href").ifBlank { ep.attr("href").toAbs() }.ifBlank { return@forEach }
-                if (epHref == url) return@forEach
+        doc.select(
+            "a.postBlock, div.postBlock a, .episodes a, .epAll a, a[href*='الحلقه'], a[href*='episode'], a[href*='/series/']"
+        ).forEach { ep ->
+            val epHref = ep.absUrl("href").ifBlank { ep.attr("href").toAbs() }.ifBlank { return@forEach }
+            if (epHref == url) return@forEach
 
-                val epText = ep.text().trim().ifBlank { ep.attr("title").trim() }
-                val epNum = Regex("(\\d+)").find(epText)?.value?.toIntOrNull()
-                val epPoster = ep.selectFirst("img")?.let { img ->
-                    listOf(
-                        img.attr("data-src"),
-                        img.attr("data-lazy-src"),
-                        img.attr("src")
-                    ).firstOrNull { it.isNotBlank() }?.toAbs()
-                }
+            val epText = listOf(
+                ep.text().trim(),
+                ep.attr("title").trim(),
+                ep.selectFirst("img")?.attr("alt")?.trim().orEmpty()
+            ).firstOrNull { it.isNotBlank() }.orEmpty()
 
-                episodes.add(
-                    newEpisode(epHref) {
-                        name = epText.ifBlank { if (epNum != null) "الحلقة $epNum" else "حلقة" }
-                        episode = epNum
-                        posterUrl = epPoster
-                    }
-                )
+            val epNum = Regex("(\\d+)").find(epText)?.value?.toIntOrNull()
+
+            val epPoster = ep.selectFirst("img")?.let { img ->
+                listOf(
+                    img.attr("data-src"),
+                    img.attr("data-lazy-src"),
+                    img.attr("data-original"),
+                    img.attr("src")
+                ).firstOrNull { it.isNotBlank() }?.toAbs()
             }
+
+            episodes.add(
+                newEpisode(epHref) {
+                    name = epText.ifBlank { if (epNum != null) "الحلقة $epNum" else "حلقة" }
+                    episode = epNum
+                    posterUrl = epPoster
+                }
+            )
+        }
 
         if (episodes.isEmpty()) {
             episodes.add(newEpisode(url) { name = title })
@@ -228,7 +257,6 @@ class Egibest : MainAPI() {
                             found = true
                         }
                     }
-
                     else -> {
                         if (loadExtractor(embedUrl, referer = data, subtitleCallback, callback)) {
                             found = true
@@ -244,11 +272,7 @@ class Egibest : MainAPI() {
                 val resolved = WebViewResolver(
                     interceptUrl = Regex(""".*\.(m3u8|mp4).*""")
                 ).resolveUsingWebView(
-                    requestCreator(
-                        "GET",
-                        data,
-                        referer = mainUrl
-                    )
+                    requestCreator("GET", data, referer = mainUrl)
                 ).first
 
                 val videoUrl = resolved?.url?.toString()
@@ -260,13 +284,14 @@ class Egibest : MainAPI() {
                         }
                     } else {
                         callback(
-                            newExtractorLink(
+                            ExtractorLink(
                                 source = name,
                                 name = name,
-                                url = videoUrl
-                            ) {
-                                referer = data
-                            }
+                                url = videoUrl,
+                                referer = data,
+                                quality = Qualities.Unknown.value,
+                                isM3u8 = false
+                            )
                         )
                         found = true
                     }
