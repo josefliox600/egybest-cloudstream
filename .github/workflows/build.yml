@@ -1,4 +1,4 @@
-name: Build Plugin
+name: Repository Check
 
 on:
   push:
@@ -7,18 +7,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
+      - name: Grant permission
+        run: chmod +x build.sh
 
-      - name: Show files
-        run: ls -R
+      - name: Run structure check
+        run: ./build.sh
