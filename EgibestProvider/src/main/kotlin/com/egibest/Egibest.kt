@@ -6,6 +6,7 @@ import com.lagradost.cloudstream3.network.WebViewResolver
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.newExtractorLink
 import com.lagradost.nicehttp.requestCreator
 import org.jsoup.nodes.Element
 
@@ -36,7 +37,11 @@ class Egibest : MainAPI() {
 
     private fun cleanTitle(raw: String): String = raw
         .replace(Regex("^مشاهدة\\s+(فيلم|مسلسل|انمي|أنمي|كرتون|برنامج)\\s+"), "")
-        .replace(Regex("\\s+(مترجم|مدبلج|حصرى|حصريا|اون لاين|أون لاين|اونلاين|كامل|كاملة|على أكثر من سيرفر).*$"), "")
+        .replace(
+            Regex(
+                "\\s+(مترجم|مدبلج|حصرى|حصريا|اون لاين|أون لاين|اونلاين|كامل|كاملة|على أكثر من سيرفر).*$"
+            ), ""
+        )
         .trim()
 
     private fun Element.pickImage(): String? {
@@ -257,6 +262,7 @@ class Egibest : MainAPI() {
                             found = true
                         }
                     }
+
                     else -> {
                         if (loadExtractor(embedUrl, referer = data, subtitleCallback, callback)) {
                             found = true
@@ -284,14 +290,15 @@ class Egibest : MainAPI() {
                         }
                     } else {
                         callback(
-                            ExtractorLink(
+                            newExtractorLink(
                                 source = name,
                                 name = name,
-                                url = videoUrl,
-                                referer = data,
-                                quality = Qualities.Unknown.value,
+                                url = videoUrl
+                            ) {
+                                referer = data
+                                quality = 0
                                 isM3u8 = false
-                            )
+                            }
                         )
                         found = true
                     }
