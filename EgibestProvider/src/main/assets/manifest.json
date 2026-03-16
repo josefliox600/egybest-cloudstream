@@ -1,0 +1,9 @@
+{
+  "name": "EgyBest Josef",
+  "description": "EgyBest provider for CloudStream",
+  "version": 1,
+  "authors": ["Josef"],
+  "language": "ar",
+  "status": 1,
+  "tvTypes": ["Movie", "TvSeries", "Anime"]
+}
