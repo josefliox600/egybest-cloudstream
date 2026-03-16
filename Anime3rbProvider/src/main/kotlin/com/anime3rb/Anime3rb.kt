@@ -47,7 +47,7 @@ class Anime3rb : MainAPI() {
             ?.toAbs()
 
         return newTvSeriesSearchResponse(title, href, TvType.Anime) {
-            posterUrl = poster
+            this.posterUrl = poster
         }
     }
 
@@ -103,12 +103,12 @@ class Anime3rb : MainAPI() {
 
         return if (episodes.isEmpty()) {
             newMovieLoadResponse(title, url, TvType.AnimeMovie, url) {
-                posterUrl = poster
+                this.posterUrl = poster
                 this.plot = plot
             }
         } else {
             newTvSeriesLoadResponse(title, url, TvType.Anime, episodes) {
-                posterUrl = poster
+                this.posterUrl = poster
                 this.plot = plot
             }
         }
@@ -120,6 +120,8 @@ class Anime3rb : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        // You need to implement this method to actually load video links
+        // This is where you would parse the episode page and extract video sources
         return false
     }
 }
