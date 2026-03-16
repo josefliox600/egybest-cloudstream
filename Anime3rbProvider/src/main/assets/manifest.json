@@ -5,5 +5,5 @@
   "authors": ["Josef"],
   "language": "ar",
   "status": 1,
-  "tvTypes": ["Anime"]
+  "tvTypes": ["Anime", "AnimeMovie"]
 }
