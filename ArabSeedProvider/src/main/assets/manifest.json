@@ -1,0 +1,13 @@
+{
+  "name": "ArabSeed Josef",
+  "description": "ArabSeed Josef CloudStream extension",
+  "version": 1,
+  "authors": [
+    "Josef"
+  ],
+  "language": "ar",
+  "status": 1,
+  "tvTypes": [
+    "Movie"
+  ]
+}
