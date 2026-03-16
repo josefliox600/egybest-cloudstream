@@ -1,5 +1,9 @@
 version = 1
 
+android {
+    namespace = "com.egibest"
+}
+
 cloudstream {
     language = "ar"
     authors = listOf("Josef")
