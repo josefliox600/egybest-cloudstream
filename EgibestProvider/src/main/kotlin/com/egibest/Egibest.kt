@@ -295,9 +295,6 @@ class Egibest : MainAPI() {
                                 name = name,
                                 url = videoUrl
                             ) {
-                                referer = data
-                                quality = 0
-                                isM3u8 = false
                             }
                         )
                         found = true
