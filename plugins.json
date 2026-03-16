@@ -1,0 +1,185 @@
+[
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2707,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 1,
+        "internalName": "AkwamProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/AkwamProvider.cs3",
+        "name": "AkwamProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2708,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Anime"
+        ],
+        "version": 1,
+        "internalName": "Anime3rbProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/Anime3rbProvider.cs3",
+        "name": "Anime3rbProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2722,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 1,
+        "internalName": "ArabSeedProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/ArabSeedProvider.cs3",
+        "name": "ArabSeedProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2718,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 1,
+        "internalName": "CimaClubProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/CimaClubProvider.cs3",
+        "name": "CimaClubProvider"
+    },
+    {
+        "iconUrl": "",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 20563,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "version": 1,
+        "internalName": "EgibestProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/EgibestProvider.cs3",
+        "name": "EgibestProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2716,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 1,
+        "internalName": "FaselHDProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/FaselHDProvider.cs3",
+        "name": "FaselHDProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2723,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 1,
+        "internalName": "Movs4uProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/Movs4uProvider.cs3",
+        "name": "Movs4uProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2729,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 1,
+        "internalName": "MyCimaProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/MyCimaProvider.cs3",
+        "name": "MyCimaProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2731,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Anime"
+        ],
+        "version": 1,
+        "internalName": "ShahiidAnimeProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/ShahiidAnimeProvider.cs3",
+        "name": "ShahiidAnimeProvider"
+    },
+    {
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/josefliox600/egybest-cloudstream",
+        "fileSize": 2726,
+        "status": 1,
+        "language": "ar",
+        "authors": [
+            "Josef"
+        ],
+        "tvTypes": [
+            "Anime"
+        ],
+        "version": 1,
+        "internalName": "WitanimeProvider",
+        "description": "EgyBest CloudStream extension",
+        "url": "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/WitanimeProvider.cs3",
+        "name": "WitanimeProvider"
+    }
+]
