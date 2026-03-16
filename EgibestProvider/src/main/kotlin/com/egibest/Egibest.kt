@@ -267,7 +267,6 @@ class Egibest : MainAPI() {
                             ) {
                                 referer = data
                                 quality = 0
-                                isM3u8 = false
                             }
                         )
                         found = true
