@@ -1,4 +1,4 @@
-import com.lagradost.cloudstream3.gradle.CloudstreamExtension 
+import com.lagradost.cloudstream3.gradle.CloudstreamExtension
 import com.android.build.gradle.BaseExtension
 
 buildscript {
@@ -36,7 +36,6 @@ subprojects {
 
     cloudstream {
         setRepo("josefliox600", "egybest-cloudstream", "github")
-
         description = "EgyBest CloudStream extension"
         authors = listOf("Josef")
     }
@@ -58,9 +57,9 @@ subprojects {
             kotlinOptions {
                 jvmTarget = "1.8"
                 freeCompilerArgs = freeCompilerArgs +
-                        "-Xno-call-assertions" +
-                        "-Xno-param-assertions" +
-                        "-Xno-receiver-assertions"
+                    "-Xno-call-assertions" +
+                    "-Xno-param-assertions" +
+                    "-Xno-receiver-assertions"
             }
         }
     }
@@ -71,8 +70,8 @@ subprojects {
 
         apk("com.lagradost:cloudstream3:pre-release")
         implementation(kotlin("stdlib"))
-        implementation("com.github.Blatzar:NiceHttp:0.3.2")
-        implementation("org.jsoup:jsoup:1.13.1")
+        implementation("com.github.Blatzar:NiceHttp:0.4.11")
+        implementation("org.jsoup:jsoup:1.18.3")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
         implementation("io.karn:khttp-android:0.1.2")
     }
