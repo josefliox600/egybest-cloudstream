@@ -3,7 +3,6 @@ package com.egibest
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.network.WebViewResolver
-import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.M3u8Helper
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.nicehttp.requestCreator
@@ -53,7 +52,7 @@ class Egibest : MainAPI() {
             selectFirst("h3.title, h3, span.title, .movieTitle, .epTitle")?.text()?.trim()
                 ?: selectFirst("img")?.attr("alt")?.trim()
                 ?: text().trim()
-            ).ifBlank { return null }
+        ).ifBlank { return null }
 
         val title = cleanTitle(rawTitle).ifBlank { rawTitle }
         val poster = pickImage()
@@ -229,6 +228,7 @@ class Egibest : MainAPI() {
                             found = true
                         }
                     }
+
                     else -> {
                         if (loadExtractor(embedUrl, referer = data, subtitleCallback, callback)) {
                             found = true
@@ -260,14 +260,15 @@ class Egibest : MainAPI() {
                         }
                     } else {
                         callback(
-                            ExtractorLink(
+                            newExtractorLink(
                                 source = name,
                                 name = name,
-                                url = videoUrl,
-                                referer = data,
-                                quality = 0,
+                                url = videoUrl
+                            ) {
+                                referer = data
+                                quality = 0
                                 isM3u8 = false
-                            )
+                            }
                         )
                         found = true
                     }
