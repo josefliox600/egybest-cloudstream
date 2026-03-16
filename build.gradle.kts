@@ -35,7 +35,7 @@ subprojects {
     apply(plugin = "com.lagradost.cloudstream3.gradle")
 
     cloudstream {
-        setRepo("josefliox600", "egybest-cloudstream", "builds")
+        setRepo("josefliox600", "egybest-cloudstream", "github")
 
         description = "EgyBest CloudStream extension"
         authors = listOf("Josef")
