@@ -38,6 +38,16 @@ jobs:
           mkdir out
           find . -path "*/build/*.cs3" -exec cp {} out/ \;
           cp build/plugins.json out/
+          cat > out/repository.json << 'EOF'
+          {
+            "name": "Josef Extensions",
+            "description": "CloudStream extensions by Josef",
+            "manifestVersion": 1,
+            "pluginLists": [
+              "https://raw.githubusercontent.com/josefliox600/egybest-cloudstream/builds/plugins.json"
+            ]
+          }
+          EOF
 
       - name: Publish to builds branch
         run: |
