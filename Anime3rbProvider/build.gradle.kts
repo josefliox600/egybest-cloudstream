@@ -10,7 +10,8 @@ cloudstream {
     status = 1
 
     tvTypes = listOf(
-        "Anime"
+        "Anime",
+        "AnimeMovie"
     )
 
     iconUrl = ""
